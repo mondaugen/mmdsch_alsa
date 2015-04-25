@@ -4,7 +4,10 @@
 #include <alsa/asoundlib.h> 
 #include <stdint.h>
 
-typedef audio_hw_sample_t int16_t;
+#define AUDIO_HW_SAMPLE_T_MAX 32767 
+
+typedef int16_t audio_hw_sample_t;
+typedef int     audio_hw_err_t;
 
 typedef struct {
     char *device;			    /* playback device */
@@ -16,8 +19,7 @@ typedef struct {
     int verbose;				/* verbose flag */
     int resample;				/* enable alsa-lib resampling */
     int period_event;			/* produce poll event after each period */
+    char  *method;              /* the transfer method. Can only be "async" for now. */
 } audio_hw_setup_t;
-
-typedef audio_hw_err_t int;
 
 #endif /* ALSA_LOWLEVEL_H */
