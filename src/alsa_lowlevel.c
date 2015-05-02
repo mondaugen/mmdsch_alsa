@@ -25,6 +25,11 @@ static snd_pcm_sframes_t buffer_size;
 static snd_pcm_sframes_t period_size;
 static snd_output_t *output = NULL;
 
+static snd_pcm_t *handle;
+static signed short *samples;
+static snd_pcm_channel_area_t *areas;
+static int method = 0;
+
 struct async_private_data {
 	signed short *samples;
 	snd_pcm_channel_area_t *areas;
@@ -36,6 +41,22 @@ static snd_async_handler_t *async_ahandler;
 
 /* The audio_hw_io_t structure */
 audio_hw_io_t audiohwio;
+
+unsigned int audio_hw_get_sample_rate(void *data) {
+    return rate;
+}
+
+unsigned int audio_hw_get_block_size(void *data) {
+    return audiohwio.length;
+}
+
+unsigned int audio_hw_get_num_input_channels(void *data) {
+    return audiohwio.nchans_in;
+}
+
+unsigned int audio_hw_get_num_output_channels(void *data) {
+    return audiohwio.nchans_in;
+}
 
 /* This will be redefined to call a user defined callback to fill the areas. */
 static void generate_sine(const snd_pcm_channel_area_t *areas, 
@@ -336,14 +357,10 @@ static struct transfer_method transfer_methods[] = {
 
 audio_hw_err_t audio_hw_setup(audio_hw_setup_t *params)
 {
-    snd_pcm_t *handle;
     int err, morehelp;
     snd_pcm_hw_params_t *hwparams;
     snd_pcm_sw_params_t *swparams;
-    int method = 0;
-    signed short *samples;
     unsigned int chn;
-    snd_pcm_channel_area_t *areas;
 
     snd_pcm_hw_params_alloca(&hwparams);
     snd_pcm_sw_params_alloca(&swparams);
@@ -434,11 +451,17 @@ audio_hw_err_t audio_hw_setup(audio_hw_setup_t *params)
     audiohwio.nchans_in = channels;
     audiohwio.nchans_out = channels;
 
+	return 0;
+}
+
+audio_hw_err_t audio_hw_start(audio_hw_setup_t *params)
+{
+    int err;
 	err = transfer_methods[method].transfer_loop(handle, samples, areas);
 	if (err < 0) {
 		printf("Transfer failed: %s\n", snd_strerror(err));
         return -1;
     }
-
-	return 0;
+    return 0;
 }
+
