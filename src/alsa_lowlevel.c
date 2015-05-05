@@ -55,7 +55,7 @@ unsigned int audio_hw_get_num_input_channels(void *data) {
 }
 
 unsigned int audio_hw_get_num_output_channels(void *data) {
-    return audiohwio.nchans_in;
+    return audiohwio.nchans_out;
 }
 
 /* This will be redefined to call a user defined callback to fill the areas. */
